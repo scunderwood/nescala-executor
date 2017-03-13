@@ -6,7 +6,7 @@ import debug.{DebugExecutor, ForkJoinMonitor}
 
 import scala.concurrent._
 
-object SleepingFutures extends App {
+object BlockingFutures extends App {
 
   val debugExecutorService = DebugExecutor.createExecutorService(Some(1))
   val global = ExecutionContext.fromExecutorService(debugExecutorService)
@@ -18,7 +18,9 @@ object SleepingFutures extends App {
     Future {
         val threadName = Thread.currentThread.getName
         println(s"Thread: $threadName Sleeping")
-        Thread.sleep(2000)
+        blocking {
+          Thread.sleep(2000)
+        }
         threadName
     } (global)
   }
@@ -27,7 +29,7 @@ object SleepingFutures extends App {
     sleepInTheFuture().map({ threadName =>
       println(s"${Thread.currentThread.getName} Got Callback after $threadName woke up")
       if (i == 50) {
-        println("Turning of Monitor")
+        println("Turning off Monitor")
         forkJoinMonitor.finish()
       }
     })(global)
