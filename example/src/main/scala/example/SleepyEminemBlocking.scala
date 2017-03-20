@@ -3,7 +3,7 @@ package example
 import debug.concurrent._
 import debug.concurrent.duration.Duration
 
-object EpilepticEminemBlocking extends App {
+object SleepyEminemBlocking extends App {
 
   implicit val ec = ExecutionContext.global
 

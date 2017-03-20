@@ -7,7 +7,7 @@ import debug.concurrent.impl.ExecutionContextImpl
 import monitor.{ForkJoinMonitor, ThreadPoolExecutorMonitor}
 
 
-object EminemGoesToTheDoctor extends App {
+object EminemSleepStudy extends App {
 
   val fjExecutorService = ExecutionContextImpl.createDefaultExecutorService(ExecutionContext.defaultReporter)
   val monitor = new ForkJoinMonitor(fjExecutorService.asInstanceOf[ForkJoinPool])
