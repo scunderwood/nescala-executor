@@ -1,8 +1,10 @@
 package play
 
 import java.util.ArrayDeque
+
+import debug.concurrent.{ExecutionContext, ExecutionContextExecutor}
+
 import scala.annotation.tailrec
-import scala.concurrent.{ ExecutionContextExecutor, ExecutionContext }
 
 /**
   * Contains the default ExecutionContext used by Iteratees.

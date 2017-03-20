@@ -7,6 +7,8 @@ lazy val root = (project in file(".")).
       scalaVersion := "2.12.1",
       version      := "0.1.0-SNAPSHOT"
     )),
+    fork in run := true,
+    //javaOptions += "-Dscala.concurrent.context.maxThreads=1",
     name := "Example",
     libraryDependencies += scalaTest % Test
   )
