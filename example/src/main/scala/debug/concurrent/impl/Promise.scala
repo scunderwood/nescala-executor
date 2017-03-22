@@ -27,14 +27,15 @@ private[concurrent] trait Promise[T] extends debug.concurrent.Promise[T] with de
   import debug.concurrent.impl.Promise.DefaultPromise
 
   override def transform[S](f: Try[T] => Try[S])(implicit executor: ExecutionContext): Future[S] = {
-    example.log("Creating a new Default Promise and Calling my own onComplete", Level.INTERNAL)
     val p = new DefaultPromise[S]()
-    onComplete { result =>  p.complete(try f(result) catch { case NonFatal(t) => Failure(t) }) }
+
+    onComplete(res =>  p.complete(try f(res) catch { case NonFatal(t) => Failure(t) }))
     p.future
   }
 
   // If possible, link DefaultPromises to avoid space leaks
   override def transformWith[S](f: Try[T] => Future[S])(implicit executor: ExecutionContext): Future[S] = {
+    example.log("Creating a new Default Promise and Calling my own onComplete", Level.INTERNAL)
     val p = new DefaultPromise[S]()
     onComplete {
       v => try f(v) match {
@@ -54,22 +55,18 @@ private[concurrent] trait Promise[T] extends debug.concurrent.Promise[T] with de
 
 /* Precondition: `executor` is prepared, i.e., `executor` has been returned from invocation of `prepare` on some other `ExecutionContext`.
  */
-private final class CallbackRunnable[T](val executor: ExecutionContext, val onComplete: Try[T] => Any) extends Runnable with OnCompleteRunnable {
-  // must be filled in before running it
+private final class CallbackRunnable[T](val executor: ExecutionContext, val onComplete: Try[T] => Any)
+  extends Runnable with OnCompleteRunnable {
   var value: Try[T] = null
 
   override def run() = {
-    require(value ne null) // must set value to non-null before running!
-    example.log(s"Callback in Runnable.run() with input value $value", Level.INTERNAL)
+    require(value ne null)
     try onComplete(value) catch { case NonFatal(e) => executor reportFailure e }
   }
 
   def executeWithValue(v: Try[T]): Unit = {
-    require(value eq null) // can't complete it twice
+    require(value eq null)
     value = v
-    // Note that we cannot prepare the ExecutionContext at this point, since we might
-    // already be running on a different thread!
-    example.log(s"Callback Runnable Calling executor.execute with value $value", Level.INTERNAL)
     try executor.execute(this) catch { case NonFatal(t) => executor reportFailure t }
   }
 }
@@ -77,6 +74,7 @@ private final class CallbackRunnable[T](val executor: ExecutionContext, val onCo
 private[concurrent] object Promise {
 
   private def resolveTry[T](source: Try[T]): Try[T] = {
+    example.log(s"Matching on source $source")
     source match {
       case Failure(t) =>
         example.log("Failure! Calling Resolver", Level.INTERNAL)
@@ -299,7 +297,11 @@ private[concurrent] object Promise {
           true
         case rs               =>
           example.log(s"Got ${rs.length} callback runnables", Level.INTERNAL)
-          rs.foreach(r => r.executeWithValue(resolved)); true
+          rs.foreach(r => {
+            example.log(s"Will Execute $r with value $resolved")
+            r.executeWithValue(resolved)
+          })
+          true
       }
     }
 
@@ -308,6 +310,7 @@ private[concurrent] object Promise {
      */
     @tailrec
     private def tryCompleteAndGetListeners(v: Try[T]): List[CallbackRunnable[T]] = {
+      example.log("Try Complete")
       get() match {
         case raw: List[_] =>
           val cur = raw.asInstanceOf[List[CallbackRunnable[T]]]
@@ -328,6 +331,7 @@ private[concurrent] object Promise {
      */
     @tailrec
     private def dispatchOrAddCallback(runnable: CallbackRunnable[T]): Unit = {
+      example.log("Dispatch or Add Callback")
       get() match {
         case r: Try[_]          =>
           example.log("Running Callback from DP")
@@ -392,8 +396,7 @@ private[concurrent] object Promise {
       }
 
       override def onComplete[U](func: Try[T] => U)(implicit executor: ExecutionContext): Unit = {
-        example.log("Kept Promise Complete, creating new Callback Runnable", Level.INTERNAL)
-        (new CallbackRunnable(executor.prepare(), func)).executeWithValue(result)
+        new CallbackRunnable(executor.prepare(), func).executeWithValue(result)
       }
 
       override def ready(atMost: Duration)(implicit permit: CanAwait): this.type = this
@@ -402,6 +405,7 @@ private[concurrent] object Promise {
     }
 
     private[this] final class Successful[T](val result: Success[T]) extends Kept[T] {
+      example.log("Kept Promise Complete, creating new Callback Runnable", Level.INTERNAL)
       override def onFailure[U](pf: PartialFunction[Throwable, U])(implicit executor: ExecutionContext): Unit = ()
       override def failed: Future[Throwable] = KeptPromise(Failure(new NoSuchElementException("Future.failed not completed with a throwable."))).future
       override def recover[U >: T](pf: PartialFunction[Throwable, U])(implicit executor: ExecutionContext): Future[U] = this

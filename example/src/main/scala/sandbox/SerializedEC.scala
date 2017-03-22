@@ -1,14 +1,15 @@
-package example
+package sandbox
 
 import akka.SerializedSuspendableExecutionContext
 import debug.concurrent.duration.Duration
 import debug.concurrent.{Await, ExecutionContext, Future}
+import example.log
 
-object SerializedEminem extends App {
+object SerializedEC {//extends App {
 
   implicit val ec = new SerializedSuspendableExecutionContext(1)(ExecutionContext.global)
 
-  def slimShady(): Future[String] = {
+  def sleepAndEcho(): Future[String] = {
     Future {
       val threadName = Thread.currentThread.getName
       log("Hi! My name is (what?)")
@@ -17,8 +18,8 @@ object SerializedEminem extends App {
     }
   }
 
-  val echoes = for (i <- 1 to 20) yield {
-    slimShady().map({ name =>
+  val echoes = for (i <- 1 to 16) yield {
+    sleepAndEcho().map({ name =>
       log(s"My name is $name")
       if (i == 10) {
         log("Taking a Break for 5 seconds")

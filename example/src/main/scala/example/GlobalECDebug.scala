@@ -6,8 +6,10 @@ import debug.concurrent._
 import debug.concurrent.impl.ExecutionContextImpl
 import monitor.{ForkJoinMonitor, ThreadPoolExecutorMonitor}
 
+import scala.util.control.NonFatal
 
-object EminemSleepStudy extends App {
+
+object GlobalECDebug extends App {
 
   val fjExecutorService = ExecutionContextImpl.createDefaultExecutorService(ExecutionContext.defaultReporter)
   val monitor = new ForkJoinMonitor(fjExecutorService.asInstanceOf[ForkJoinPool])
@@ -20,20 +22,24 @@ object EminemSleepStudy extends App {
 //  val fixedThreadPoolMonitor = new ThreadPoolExecutorMonitor(fixedThreadPool.asInstanceOf[ThreadPoolExecutor])
 //  new Thread(fixedThreadPoolMonitor).start()
 
-  def slimShady(): Future[String] = {
+
+  def doAsyncBusyWork(id: Int): Future[String] = {
     Future {
-      val threadName = Thread.currentThread.getName
-      log("Hi! My name is (what?)")
-      Thread.sleep(2000)
-      threadName
+      blocking {
+        sleepAndEcho(id)
+      }
     }
   }
 
-  for (i <- 1 to 20) yield {
-    slimShady().map({ name =>
-      log(s"My name is $name")
-      if (i == 20) monitor.finish()
-    })
+  for (i <- 1 to 33000) yield {
+    try {
+      doAsyncBusyWork(i).map({ name =>
+        log(s"$name Finished Work for $i")
+        if (i == 33000) monitor.finish()
+      })
+    } catch {
+      case NonFatal(t) => t.printStackTrace
+    }
   }
 
 }

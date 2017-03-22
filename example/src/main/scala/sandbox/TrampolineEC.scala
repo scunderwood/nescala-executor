@@ -1,14 +1,15 @@
-package example
+package sandbox
 
 import debug.concurrent.duration.Duration
 import debug.concurrent.{Await, Future}
-import slick.SameThreadExecutionContext
+import example.log
+import play.Execution
 
-object SameThreadEminem extends App {
+object TrampolineEC {//extends App {
 
-  implicit val ec = SameThreadExecutionContext
+  implicit val ec = Execution.trampoline
 
-  def slimShady(): Future[String] = {
+  def sleepAndEcho(): Future[String] = {
     Future {
       val threadName = Thread.currentThread.getName
       log("Hi! My name is (what?)")
@@ -17,8 +18,8 @@ object SameThreadEminem extends App {
     }
   }
 
-  val echoes = for (_ <- 1 to 20) yield {
-    slimShady().map({ name =>
+  val echoes = for (_ <- 1 to 16) yield {
+    sleepAndEcho().map({ name =>
       log(s"My name is $name")
     })
   }

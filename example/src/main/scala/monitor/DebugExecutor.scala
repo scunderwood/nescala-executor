@@ -38,7 +38,10 @@ class ForkJoinMonitor(forkJoinPool: ForkJoinPool, delaySeconds: Int = 1) extends
       println(s"""
                   |Pool Size:${forkJoinPool.getPoolSize}
                   |Active Thread Count: ${forkJoinPool.getActiveThreadCount}
+                  |Running Thread Count: ${forkJoinPool.getActiveThreadCount}
                   |Queued Submissions: ${forkJoinPool.getQueuedSubmissionCount}
+                  |Queued Tasks: ${forkJoinPool.getQueuedTaskCount}
+                  |Has Queued Submissions: ${forkJoinPool.hasQueuedSubmissions}
                   |""".stripMargin)
       Thread.sleep(1000 * delaySeconds)
     }
