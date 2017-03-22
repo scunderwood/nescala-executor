@@ -58,9 +58,12 @@ an (implicit ec: ExecutionContext) parameter to your method
 or import scala.debug.concurrent.ExecutionContext.Implicits.global.""")
 trait ExecutionContext {
 
-  /** Runs a block of code on this execution context.
+  /** Runs a block
+   *  of code on
+   *  this execution context.
    *
-   *  @param runnable  the task to execute
+   *  @param runnable
+   *  the task to execute
    */
   def execute(runnable: Runnable): Unit
 

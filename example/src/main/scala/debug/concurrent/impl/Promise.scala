@@ -318,6 +318,7 @@ private[concurrent] object Promise {
     }
 
     final def onComplete[U](func: Try[T] => U)(implicit executor: ExecutionContext): Unit = {
+      example.log("Dispatching Callback from DP")
       dispatchOrAddCallback(new CallbackRunnable[T](executor.prepare(), func))
     }
 
@@ -329,10 +330,12 @@ private[concurrent] object Promise {
     private def dispatchOrAddCallback(runnable: CallbackRunnable[T]): Unit = {
       get() match {
         case r: Try[_]          =>
+          example.log("Running Callback from DP")
           runnable.executeWithValue(r.asInstanceOf[Try[T]])
         case dp: DefaultPromise[_] =>
           compressedRoot(dp).dispatchOrAddCallback(runnable)
         case listeners: List[_] =>
+          example.log("adding runnable to listeners")
           if (compareAndSet(listeners, runnable :: listeners)) () else dispatchOrAddCallback(runnable)
       }
     }
