@@ -74,7 +74,7 @@ private final class CallbackRunnable[T](val executor: ExecutionContext, val onCo
 private[concurrent] object Promise {
 
   private def resolveTry[T](source: Try[T]): Try[T] = {
-    example.log(s"Matching on source $source")
+    example.log(s"Matching on source $source", Level.INTERNAL)
     source match {
       case Failure(t) =>
         example.log("Failure! Calling Resolver", Level.INTERNAL)
@@ -298,7 +298,7 @@ private[concurrent] object Promise {
         case rs               =>
           example.log(s"Got ${rs.length} callback runnables", Level.INTERNAL)
           rs.foreach(r => {
-            example.log(s"Will Execute $r with value $resolved")
+            example.log(s"Will Execute $r with value $resolved", Level.INTERNAL)
             r.executeWithValue(resolved)
           })
           true
@@ -310,7 +310,7 @@ private[concurrent] object Promise {
      */
     @tailrec
     private def tryCompleteAndGetListeners(v: Try[T]): List[CallbackRunnable[T]] = {
-      example.log("Try Complete")
+      example.log("Try Complete", Level.INTERNAL)
       get() match {
         case raw: List[_] =>
           val cur = raw.asInstanceOf[List[CallbackRunnable[T]]]
@@ -321,7 +321,7 @@ private[concurrent] object Promise {
     }
 
     final def onComplete[U](func: Try[T] => U)(implicit executor: ExecutionContext): Unit = {
-      example.log("Dispatching Callback from DP")
+      example.log("Dispatching Callback from DP", Level.INTERNAL)
       dispatchOrAddCallback(new CallbackRunnable[T](executor.prepare(), func))
     }
 
@@ -331,15 +331,15 @@ private[concurrent] object Promise {
      */
     @tailrec
     private def dispatchOrAddCallback(runnable: CallbackRunnable[T]): Unit = {
-      example.log("Dispatch or Add Callback")
+      example.log("Dispatch or Add Callback", Level.INTERNAL)
       get() match {
         case r: Try[_]          =>
-          example.log("Running Callback from DP")
+          example.log("Running Callback from DP", Level.INTERNAL)
           runnable.executeWithValue(r.asInstanceOf[Try[T]])
         case dp: DefaultPromise[_] =>
           compressedRoot(dp).dispatchOrAddCallback(runnable)
         case listeners: List[_] =>
-          example.log("adding runnable to listeners")
+          example.log("adding runnable to listeners", Level.INTERNAL)
           if (compareAndSet(listeners, runnable :: listeners)) () else dispatchOrAddCallback(runnable)
       }
     }

@@ -1,5 +1,7 @@
 package example
 
+import java.util.concurrent.Executors
+
 import debug.concurrent.{Await, ExecutionContext, Future}
 import debug.concurrent.duration.Duration
 
@@ -7,7 +9,8 @@ object GlobalECWorking extends App {
 
   val startTime = System.currentTimeMillis
 
-  implicit val ec = ExecutionContext.global
+  //implicit val ec = ExecutionContext.global
+  implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(1))
 
   def doAsyncWork(id: Int): Future[String] = {
     Future {

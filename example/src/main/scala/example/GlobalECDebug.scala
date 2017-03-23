@@ -25,9 +25,9 @@ object GlobalECDebug extends App {
 
   def doAsyncBusyWork(id: Int): Future[String] = {
     Future {
-      blocking {
+      //blocking {
         sleepAndEcho(id)
-      }
+      //}
     }
   }
 

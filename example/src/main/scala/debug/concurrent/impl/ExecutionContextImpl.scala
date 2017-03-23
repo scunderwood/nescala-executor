@@ -8,10 +8,13 @@
 
 package debug.concurrent.impl
 
-import java.util.concurrent.{ ForkJoinPool, ForkJoinWorkerThread, ForkJoinTask, Callable, Executor, ExecutorService, ThreadFactory, TimeUnit }
+import java.util.concurrent.{Callable, Executor, ExecutorService, ForkJoinPool, ForkJoinTask, ForkJoinWorkerThread, ThreadFactory, TimeUnit}
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.Collection
-import debug.concurrent.{ BlockContext, ExecutionContext, CanAwait, ExecutionContextExecutor, ExecutionContextExecutorService }
+
+import debug.concurrent.{BlockContext, CanAwait, ExecutionContext, ExecutionContextExecutor, ExecutionContextExecutorService}
+import example.Level
+
 import scala.annotation.tailrec
 
 
@@ -108,7 +111,7 @@ object ExecutionContextImpl {
       numThreads,
       maxNoOfThreads)
 
-    println(s"Execution Context desiredParallelism: $desiredParallelism")
+    example.log(s"Execution Context desiredParallelism: $desiredParallelism", Level.INTERNAL)
     // The thread factory must provide additional threads to support managed blocking.
     val maxExtraThreads = getInt("scala.debug.concurrent.context.maxExtraThreads", "256")
 

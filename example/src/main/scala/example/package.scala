@@ -32,6 +32,15 @@ package object example {
     Thread.currentThread.getName
   }
 
+  def sendToApi(id: Int): Unit = {
+    Thread.sleep(1000)
+    log(s"Sent to API")
+  }
+
+  def writeToFile(id: Int): Unit = {
+    log(s"Wrote to File")
+  }
+
   def fibonacci(n : Int) : Int = {
     def fibTail(n: Int, a: Int, b: Int): Int = n match {
       case 0 => a
