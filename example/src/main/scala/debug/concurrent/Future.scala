@@ -651,8 +651,9 @@ object Future {
   *  @return          the `Future` holding the result of the computation
   */
   def apply[T](body: =>T)(implicit executor: ExecutionContext): Future[T] = {
-    //example.log(s"${Thread.currentThread.getName} Mapping on Unit", Level.INTERNAL)
-    impl.Promise.KeptPromise(Success(())).future.map(_ => body)
+    val successfulTry = Success(())
+    val keptPromise = impl.Promise.KeptPromise(successfulTry)
+    keptPromise.future.map(_ => body)
   }
 
   /** Simple version of `Future.traverse`. Asynchronously and non-blockingly transforms a `TraversableOnce[Future[A]]`

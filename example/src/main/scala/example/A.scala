@@ -3,21 +3,18 @@ package example
 import debug.concurrent._
 import debug.concurrent.duration.Duration
 
-object GlobalECWorkingBlocking extends App {
-
+object A extends App {
   val startTime = System.currentTimeMillis
 
   implicit val ec = ExecutionContext.global
 
   def doAsyncWork(id: Int): Future[String] = {
     Future {
-      blocking {
-        busyWork(id)
-      }
+      sleepAndEcho(id)
     }
   }
 
-  val echoes = for (i <- 1 to 50) yield {
+  val echoes = for (i <- 1 to 16) yield {
     doAsyncWork(i).map({ name =>
       log(s"$name Finished Work for $i")
     })

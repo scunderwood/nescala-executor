@@ -3,7 +3,7 @@ package example
 import debug.concurrent._
 import debug.concurrent.duration.Duration
 
-object GlobalECSleeping extends App {
+object B extends App {
 
   val startTime = System.currentTimeMillis
 
@@ -11,16 +11,19 @@ object GlobalECSleeping extends App {
 
   def doAsyncWork(id: Int): Future[String] = {
     Future {
-      sleepAndEcho(id)
+      blocking {
+        sleepAndEcho(id)
+      }
     }
   }
 
-  val echoes = for (i <- 1 to 50) yield {
+  val echoes = for (i <- 1 to 16) yield {
     doAsyncWork(i).map({ name =>
-      log(s"$name Finished Work for $i")
+      log(s"$name Finished Sleep for $i")
     })
   }
 
   Await.ready(Future.sequence(echoes), Duration.Inf)
   log(s"Ran in ${System.currentTimeMillis - startTime}ms")
 }
+

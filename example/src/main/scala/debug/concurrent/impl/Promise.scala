@@ -28,7 +28,6 @@ private[concurrent] trait Promise[T] extends debug.concurrent.Promise[T] with de
 
   override def transform[S](f: Try[T] => Try[S])(implicit executor: ExecutionContext): Future[S] = {
     val p = new DefaultPromise[S]()
-
     onComplete(res =>  p.complete(try f(res) catch { case NonFatal(t) => Failure(t) }))
     p.future
   }
@@ -65,7 +64,6 @@ private final class CallbackRunnable[T](val executor: ExecutionContext, val onCo
   }
 
   def executeWithValue(v: Try[T]): Unit = {
-    require(value eq null)
     value = v
     try executor.execute(this) catch { case NonFatal(t) => executor reportFailure t }
   }
